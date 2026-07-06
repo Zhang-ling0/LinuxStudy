@@ -1,0 +1,9 @@
+#include<stdio.h>
+#include<unistd.h>
+int main(){
+	printf("hhhhhh\r\n");
+	fflush(stdout);
+	sleep(3);
+	return 0;
+}
+
