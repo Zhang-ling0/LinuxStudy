@@ -1,5 +1,5 @@
 myshell:myshell.c
-	gcc -o $@ $^
+	g++ -o $@ $^
 .PHONY:clean
 clean:
 	rm -f myshell

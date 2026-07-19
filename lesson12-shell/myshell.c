@@ -3,6 +3,8 @@
 #include<unistd.h>
 #include<sys/types.h>
 #include<sys/wait.h>
+#include<stdio.h>
+#include<iostream>
 #include<string.h>
 #define MAXARGS 32
 #define MAXSIZE 128
@@ -12,9 +14,41 @@ char *gargv[MAXARGS];
 int gargc = 0;//shell内部维护一张命令行参数表
 const char *gsep = " ";//双引号的空格
 //我们shell自己的工作路径
-char cwd[MAXSIZE];
+char cwd[2048];
 //第一步：输出一个命令行
 //分割符不是一个字符，而是一个字符串，直接写个空格上去会报错的
+//环境变量到底怎么来的？有一个命令行参数表
+//环境变量表
+char *genv[MAXARGS];
+int genvc = 0;
+//最近一个命令执行完毕，退出码
+int lastcode = 0;
+void LoadEnv()
+{
+	//也就是读取家目录里的配置文件
+	//今天我们从父进程拷贝
+	char **environ;
+	for(;environ[genvc];genvc++)
+	{
+		genv[genvc] = (char*)malloc(sizeof(char)*4096);
+		strcpy(genv[genvc],environ[genvc]);
+	}
+	genv[genvc] = NULL;
+	printf("Load env : \n");
+	for(int i = 0;genv[i];i++)
+		printf("genv[%d]: %s\n",i,genv[i]);
+}
+static std::string rfindDir(const std::string &p)
+{
+	if(p == "/")
+		return p;
+	const std::string psep = "/";
+	auto pos = p.rfind(psep);
+	if(pos == std::string::npos)
+		return std::string();
+	return p.substr(pos+1);
+	
+}
 const char *GetUserName()
 {
 	char *name = getenv("USER");
@@ -40,7 +74,7 @@ const char *GetPwd()
 void PrintfCommandLine()
 {
 	//如果不加\r\n就会一直在缓冲区里不打印
-	printf("[%s@%s %s]# ",GetUserName(),GetHostName(),GetPwd());//用户名 @主机名 当前路径，可以调用对应的系统中的
+	printf("[%s@%s %s]# ",GetUserName(),GetHostName(),rfindDir(GetPwd()).c_str());//用户名 @主机名 当前路径，可以调用对应的系统中的
 	fflush(stdout);
 }
 int GetCommand(char commandline[],int size)
@@ -86,6 +120,7 @@ int ExecuteCommand(){
 		pid_t rid = waitpid(id,&status,0);
 		if(rid >0)
 		{
+			lastcode  = WEXITSTATUS(status);
 			//printf("wait child process success!\n");
 			//TODO
 		}
@@ -110,16 +145,41 @@ int CheckBuiltinExecute()
 			//2.更改环境变量
 			char pwd[1024];
 			getcwd(pwd,sizeof(pwd));//
-			snprintf(cwd,sizeof(cwd),"PWD = %s",pwd);//内建路径切换的时候，格式化输出,等于要将路径显示为：cwd=/home/...
+			snprintf(cwd,sizeof(cwd),"PWD=%s",pwd);//内建路径切换的时候，格式化输出,等于要将路径显示为：cwd=/home/...
 								 //将当前工作路径保存到缓冲区中
 			putenv(cwd);//将环境变量导出到当前进程的上下文中
+			else if(strcmp(gargv[1]+1,"PATH")==0)
+			{
+				printf("%s\n",getenv("PATH"));//putenv和getenv 究竟是什么
+			}
+			lastcode = 0;//执行完毕清除为0
 		}
 	return 1;
+	}
+	//判断其是否是内建命令
+	else if(strcmp(gargv[10],"echo") == 0)
+	{
+		if(gargc == 2)
+		{
+			if(gargv[1][0]=='$')
+			{
+				// $? 查环境变量将?看作一个变量名
+				if(strcmp(gargv[1]+1,"?") == 0)
+				{
+				 printf("lastcode: %d\n",lastcode);
+				}
+				lastcode = 0;
+			}
+			return 1;
+		}
+		
 	}
 	return 0;
 }
 int main()
 {
+	//0.从配置文件中获取环境变量，填充环境变量表
+	LoadEnv();
 	//用一个缓冲区来接收我们的命令行
 	char command_line[MAXSIZE] = {0};
 	while(1)
@@ -141,6 +201,7 @@ int main()
 
 		//5. 让子进程执行这个命令
 		//printf("%s\n",command_line);
+		//lastcode:最近一个指令执行的时候的退出码
 		ExecuteCommand();
 	}
 	return 0;
