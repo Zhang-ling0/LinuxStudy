@@ -3,12 +3,15 @@
 #define SIZE 1024
 #define NON_BUFFER 1//1
 #define LINE_BUFFER 2//10
-#define FULL_buffer 4//100 位图的形式表示
-typedef struct -MyFILE
+#define FULL_BUFFER 4//100 位图的形式表示
+//默认模式MODE
+#define MODE 0666
+
+typedef struct myFILE
 {
 	int fd;//文件描述符
-	int flag;//打开模式是什么？
-	int flash_mode;
+	int flags;//打开模式是什么？
+	int flush_mode;
 	char outbuffer[SIZE];//缓冲区
 	int pos;//buffer
 	int cap;
@@ -17,5 +20,5 @@ typedef struct -MyFILE
 
 myFILE *myfopen(const char *pathname,const char *mode);//r，w,a,r+,w+
 void myfclose(myFILE *fp);
-int myfputs(const char* str，myFILE *fp);
-void myffluesh(myFILE *fp); 
+int myfputs(const char *str,myFILE *fp);
+void myfflush(myFILE *fp); 
