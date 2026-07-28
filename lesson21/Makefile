@@ -1,5 +1,5 @@
-code:text.c
+pipe:textPipe.c
 	gcc -o $@ $^
 .PHONY: clean
 clean:
-	rm -f code
+	rm -f pipe
