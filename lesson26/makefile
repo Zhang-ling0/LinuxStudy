@@ -1,4 +1,5 @@
 testsig:testsig.cc
-	g++ -o $@ $^
+	g++ -w -o $@ $^
 .PHONY: clean
 clean:
+	rm -f testsig
