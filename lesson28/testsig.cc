@@ -15,7 +15,7 @@ void PrintPending(sigset_t &pending)
         {
             std::cout << "0";
         }
-        // 每 8 个信号加一个空格，方便阅读
+        // 每 8 个信号加一个空，方便阅读
         if ((signo - 1) % 8 == 0 && signo != 1)
         {
             std::cout << " ";
@@ -69,7 +69,6 @@ int main()
             std::cout << "解除对 2 号信号的屏蔽，待处理的信号将被递达" << std::endl;
             sigprocmask(SIG_SETMASK, &old_set, nullptr);
         }
-
         cnt++;
         sleep(1);
     }
