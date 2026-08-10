@@ -15,7 +15,6 @@ void PrintPending(sigset_t &pending)
         {
             std::cout << "0";
         }
-        // 每 8 个信号加一个空
         if ((signo - 1) % 8 == 0 && signo != 1)
         {
             std::cout << " ";

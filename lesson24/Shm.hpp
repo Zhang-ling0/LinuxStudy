@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 const int gsize = 128;
-//目的是让不同的进程看到同一份资源
+// 目的是让不同的进程看到同一份资源
 #define PATHNAME "/tmp"
 #define PROJ_ID 0x66
 class Shm {
@@ -16,8 +16,7 @@ public:
   // 构造函数
   Shm(int size = gsize) : _shmid(-1), _size(size), _start_addr(nullptr) {}
 
-  void Delete() 
-  {
+  void Delete() {
     int n = shmctl(_shmid, IPC_RMID, nullptr);
     (void)n;
   }
@@ -37,16 +36,26 @@ public:
   }
   void Get() { GetHelper(IPC_CREAT | 0666); }
   void Create() { GetHelper(IPC_CREAT | IPC_EXCL | 0666); }
-
+  void PrintAttr() {
+    struct shmid_ds ds;
+    int n = shmctl(_shmid, IPC_STAT, &ds);
+    if (n < 0) {
+      perror("shmctl");
+      exit(4);
+    } else {
+      std::cout << "共享内存的大小为: " << ds.shm_segsz << std::endl;
+      std::cout << "共享内存的最后一次操作时间为: " << ctime(&ds.shm_atime);
+      std::cout << "共享内存的最后一次附加时间为: " << ctime(&ds.shm_dtime);
+      std::cout << "共享内存的最后一次分离时间为: " << ctime(&ds.shm_ctime);
+      std::cout << "共享内存的当前附加进程数为: " << ds.shm_nattch << std::endl;
+    }
+  }
   // 析构函数
   ~Shm() {}
-  //测试共享内存的自由度
-  void* Add(){
-    return _start_addr;
-  }
-  int size(){
-    return _size;
-  }
+  // 测试共享内存的自由度
+  void *Add() { return _start_addr; }
+  int size() { return _size; }
+
 private:
   // 获取key
   key_t GetKey() {
