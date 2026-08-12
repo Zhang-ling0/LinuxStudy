@@ -16,6 +16,7 @@ void *threadRun(void *args)
 int main()
 {
     pthread_t tid;
+    //创建线程
     pthread_create(&tid,NULL,threadRun,NULL);
 
     while(true)
