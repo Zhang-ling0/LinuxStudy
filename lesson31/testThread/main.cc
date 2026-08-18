@@ -3,11 +3,10 @@
 #include<unistd.h>
 #include<pthread.h>
 #include<vector>
-int tickets = 100;//共享资源，尝试对一个共享资源进行更新                                  
+int tickets = 1000;//共享资源，尝试对一个共享资源进行更新                                  
 
 void* route(void* args)
 {
-    //类型转化用以接收函数
     char* id =(char*) args;
     while(1){
         if(tickets>0)
