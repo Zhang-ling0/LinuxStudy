@@ -22,12 +22,14 @@ public:
     void Enqueue(T &in)//生产者调用
     {
         //1. 预定资源
-        _blank_sem.P();
-        _pmutex.lock();//让生产者先竞争锁呢？还是让生产者先预定资源呢？ 先预定资源，再竞争锁
+        _blank_sem.P();//先买票
+        //让生产者先竞争锁呢？还是让生产者先预定资源呢？ 先预定资源，再竞争锁
+    {
+        grouplock lock(_pmutex);//再排队
         //2. 找位置进行生产
         _rq[_productor_step++] = in;
         _productor_step %=_cap;//环型队列的概念
-        _pmutex.unlock();
+    }
         //3. 释放数据资源
         _data_sem.V();
     }
@@ -36,10 +38,11 @@ public:
    
         //预定资源
         _data_sem.P();
-        _cmutex.lock();
+    {
+        grouplock lock(_cmutex);
         *out = _rq[_consumer_step++];
         _consumer_step %= _cap;
-        _cmutex.unlock();
+    }
         _blank_sem.V(); 
     }
     ~RingQueue(){}
