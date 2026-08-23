@@ -2,11 +2,21 @@
 #include <iostream>
 #include <pthread.h>
 
+
 class Mutex {
 public:
   Mutex() { pthread_mutex_init(&_lock, nullptr); }
-  void lock() { pthread_mutex_lock(&_lock); }
-  void unlock() { pthread_mutex_unlock(&_lock); }
+  void lock() 
+  { 
+    //如果你只想封装一个日志的话
+
+    pthread_mutex_lock(&_lock);
+  }
+  void unlock() 
+  { 
+
+    pthread_mutex_unlock(&_lock);
+  }
   pthread_mutex_t *Ptr()
   {
     return &_lock;
