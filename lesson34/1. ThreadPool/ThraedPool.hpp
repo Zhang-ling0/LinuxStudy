@@ -41,11 +41,12 @@ namespace NS_THREAND_POOL
             {
                 T task;
                 {
+
                     // 1. 临界区：加锁
                     grouplock lock(_mutex); // RAII 加锁
-
                     // 2. 等待任务
-                    //不休眠：1.队列不为空2.线程是退出
+                    //不休眠：1.队列不为空2.
+                    {
                     while (_tasks.empty()&&_isrunnig)//既不退出，也不为空，就退出
                     {
                         _slaver_sleeper_count++;
@@ -64,9 +65,10 @@ namespace NS_THREAND_POOL
                     //1.线程池退出&&任务队列为空
                     if(!_isrunnig&&_tasks.empty())
                     {
-                        _mutex.unlock();
+                        _mutex.unlock();//要先解锁再完成
                         break;//直接退出每解锁
                     }
+                }
 
                     // 3. 取出任务（临界区内）
                     // 有任务怎么办，1.取任务：把任务从任务队列写到临时变量里，将任务由公共变为私有
@@ -80,10 +82,11 @@ namespace NS_THREAND_POOL
                 // 5. 处理任务（临界区外，安全且高效）
                 LOG(LogLevel::INFO) << name << "处理任务";
                 task(); // 线程中的线程关心
-                // LOG(LogLevel::DEBUG) << name << "正在运行";
+                LOG(LogLevel::DEBUG) <<task.Result() << "正在运行";
                 // sleep(5);
             }
             //线程脱出
+            LOG(LogLevel::INFO) <<name << "quit";
         }
 
     public:
