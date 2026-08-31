@@ -10,11 +10,13 @@
 #include<netinet/in.h>
 #include <strings.h>
 #include<arpa/inet.h>
+#include<sys/types.h>
+#include<cstring>
 
 using namespace NS_LOG_MODULE;
 
-//const static int default_fd = -1;
-const static int default_fd = 8888;
+const static int default_fd = -1;
+//const static int default_fd = 8888;
 
 enum {
     SUCCESS = 0,
@@ -31,7 +33,11 @@ public:
     ,_ip(ip)
     ,_port(port)
     {}
-    ~UdpServer() {}
+    ~UdpServer() 
+    {
+        if(_sockfd>0)
+            close(_sockfd);//关闭文件描述符
+    }
 
     void Init()
     {
@@ -46,7 +52,7 @@ public:
         //服务器的IP是多少，服务器的端口号是多少
         //第二步：填充网络信息,有没有把IP和端口信息设置到内核中
         //设置到你刚刚打开的网络socket对应的文件内部
-        struct sorkaddr_in local;//创建网络套接字类型
+        struct sockaddr_in local;//创建网络套接字类型
         //还没有struct——sockeadd_in实际上是一个数据类型，local这个变量是在用户栈上的，并没有设置到内核
         bzero(&local,sizeof(local));
         local.sin_family = AF_INET;//结构体子类的类型是一个网络套接字的类型
@@ -62,7 +68,7 @@ public:
             LOG(LogLevel::FATAL)<<"bind socket error";
             exit(BIND_ERR);
         }
-        LOG(LogLevel::INFO)<<"bind socket success,ip: "<<_ip<<",porr:"<<_port;
+        LOG(LogLevel::INFO)<<"bind socket success,ip: "<<_ip<<",port:"<<_port;
     }
 
     void Start() {
