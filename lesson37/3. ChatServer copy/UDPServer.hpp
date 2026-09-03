@@ -97,7 +97,6 @@ public:
             if(n > 0) {
                 inbuffer[n] = 0;
                 InetAddr clientaddress(peer);
-                LOG(LogLevel::DEBUG)<<clientaddress.Tostring()<<" #"<<inbuffer;
                 _handler_addr(clientaddress);
                 _handler_msg(_sockfd, inbuffer);
             } else if(n < 0) {

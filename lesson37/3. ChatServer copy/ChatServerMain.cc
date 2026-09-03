@@ -28,7 +28,6 @@ int main(int argc,char* argv[])
     //网络模块
     UdpServer usvr(server_port);
     usvr.Init();
-    usvr.Start();
     //执行注册服务
     usvr.RegisterService([&r](const InetAddr &addr){
         r.CheckUser(addr);
