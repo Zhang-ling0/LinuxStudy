@@ -1,9 +1,9 @@
 .PHONY:all
 all:client_tcp server_tcp
 server_tcp:EchoTcpServerMain.cc
-	g++ -o $@ $^ -std=c++17 -lpthread
+	g++ -o $@ $^ -std=c++17
 client_tcp:EchoTcpClient.cc 
-	g++ -o $@ $^ -std=c++17 
+	g++ -o $@ $^ -std=c++17
 .PHONY: clean
 clean:
 	rm -f client_tcp server_tcp
