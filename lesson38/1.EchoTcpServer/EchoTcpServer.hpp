@@ -12,9 +12,13 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include "ThreadPool.hpp"
+#include<functional>
 // #include <signal.h>
 
 using namespace NS_LOG_MODULE;
+using namespace NS_THREAND_POOL;
+using task_t = std::function<void()>;//处理的任务
 
 enum
 {
@@ -82,11 +86,14 @@ public:
 
     void serviceIO(int sockfd, InetAddr address)
     {
+        //短服务对应短链接
         LOG(LogLevel::DEBUG) << "client info is: " << address.Tostring();
 
         char inbuffer[1024] = {0};
 
-        // 读
+        // 读，你收到的字符串可不可以是命令行?
+        //"ls -a -l"->"ls""-a""-l"->argv->fork()创建子进程->程序替换exec*->得到结果->write
+        //字符串-->一段C代码？->写入到文件->fork()->exec*("gcc",XXX)->fork exe->result->write//在线OJ
         ssize_t n = read(sockfd, inbuffer, sizeof(inbuffer) - 1);
 
         if (n > 0)
@@ -107,7 +114,7 @@ public:
         {
             LOG(LogLevel::ERROR) << "client read error, address: " << address.Tostring();
         }
-        // LOG(LogLevel::DEBUG) << "client info is: " << address.Tostring();
+         LOG(LogLevel::DEBUG) << "client info is: " << address.Tostring();
 
         // while (true)
         // {
@@ -143,7 +150,7 @@ public:
     class ThreadData
     {
     public:
-        ThreadData(TcpServer *ts, int sockfd, InetAddr &addr)
+        ThreadData(TcpServer *ts, int sockfd, const InetAddr &addr)
             : _this(ts), sockfd(sockfd), _addr(addr) {};
         ~ThreadData()
         {
@@ -183,14 +190,19 @@ public:
             LOG(LogLevel::DEBUG) << "accept success, sockfd: " << sockfd;
 
             // 6. 处理新连接
-
-            // version3 多线程:多线程属于长服务，意味着只要开始服务就要一直服务知道不想要
-            //  长服务对应的一定是长链接--只能处理中小形应用（大量的建立链接，创建线程，你的服务器容易挂，怎加CPU的负载）
-            //  --多路转接技术
-            pthread_t tid;
+            //version4:创建线程的成本也是比较高的，我们可以直接接入线程池，直接使用
             InetAddr clientaddress(clientaddr);
-            ThreadData *td = new ThreadData(this, sockfd, clientaddress); // 主动的将this指针和文件描述符传递进去
-            pthread_create(&tid, nullptr, thread_routine, (void *)td);    // 创建线程
+            ThreadPool<task_t>::Instance()->Enqueue([this,sockfd,clientaddress](){//拷贝过来
+                this->serviceIO(sockfd,clientaddress);
+            });//传递任务并处理，参数绑定
+
+            //version3 多线程:多线程属于长服务，意味着只要开始服务就要一直服务知道不想要
+            //长服务对应的一定是长链接--只能处理中小形应用（大量的建立链接，创建线程，你的服务器容易挂，怎加CPU的负载）
+            //--多路转接技术
+            // pthread_t tid;
+            // InetAddr clientaddress(clientaddr);
+            // ThreadData *td = new ThreadData(this, sockfd, clientaddress); // 主动的将this指针和文件描述符传递进去
+            // pthread_create(&tid, nullptr, thread_routine, (void *)td);    // 创建线程
             // pthread_join();//你这里等待不久又阻塞了吗？
             // 让线程自己把自己设计为分离状态
 

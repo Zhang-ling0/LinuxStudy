@@ -1,4 +1,4 @@
-#pragma once
+   #pragma once
 #include<netinet/in.h>//关键函数类型
 #include<arpa/inet.h>
 #include<sys/types.h>
@@ -15,7 +15,10 @@ public:
         :_address(address)
         ,_len(sizeof(address))
         {
-            _ip = inet_ntoa(_address.sin_addr);
+            //_ip = inet_ntoa(_address.sin_addr);
+            char ipstr[32];
+            inet_ntop(AF_INET,&(_address.sin_addr),ipstr,sizeof(ipstr));
+            _ip=ipstr;
             _port = ntohs(_address.sin_port);
         }
     InetAddr(uint16_t port,const std::string &ip="0.0.0.0")
@@ -24,8 +27,9 @@ public:
     {
         bzero(&_address,sizeof(_address));
         _address.sin_family = AF_INET;
-        _address.sin_addr.s_addr=inet_addr(ip.c_str());
+        //_address.sin_addr.s_addr=inet_addr(ip.c_str());
         _address.sin_port = htons(_port);
+        inet_pton(AF_INET,ip.c_str(),&(_address.sin_addr));//线程安全的进行转化
         _len=sizeof(_address);
     }
     //重载比较符号
