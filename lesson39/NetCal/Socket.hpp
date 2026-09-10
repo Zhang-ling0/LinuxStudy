@@ -37,14 +37,19 @@ namespace NS_SOCKET_MODULE
         virtual std::shared_ptr<Socket> Accepter(InetAddr &addr) = 0;
         virtual int Sockfd() = 0;
         virtual int Recv(std::string *out)=0;
-        virtual int Send(const std::string &inet6_opt_find)=0;
+        virtual int Send(const std::string &in)=0;
         virtual void Close()=0;
+        virtual bool Connect(InetAddr &addr) = 0;
         void BuildTcpSocketMethod(uint16_t port) // 套路化的固定方法放到父类中被子进程直接继承，这个叫做模板方法
         {
             _port = port;
             CreateSocketOrDie();
             BindSocketOrDie();
             ListenSocketOrDie();
+        }
+        void BuildTcpClientSockMethod()
+        {
+            CreateSocketOrDie();   
         }
         // void BuildUdpSocketMethod()
         // {
@@ -144,7 +149,13 @@ namespace NS_SOCKET_MODULE
                 _sockfd = -1;//关掉套接字
             }
         }
-
+        bool Connect(InetAddr &addr) override
+        {
+            int n = connect(_sockfd,addr.NetAddress(),addr.len());
+            if(n<0) return false;
+            else return true;
+        }
+        
         ~TcpSocket()
         {
         }
