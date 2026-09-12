@@ -16,10 +16,8 @@ int main(int argc, char *argv[])
         Usage(argv[0]);
         exit(1);
     }
+    ENABLE_CONSOLE_LOG_STRATEGY();//使用显示器打印日志的策略
     uint16_t port = std::stoi(argv[1]);
-
-    // 0. 定义计算器
-   
 
     // 1. 定义Http协议
     auto protocol = std::make_shared<HttpProtocol>();

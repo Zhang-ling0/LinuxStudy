@@ -57,7 +57,8 @@ private:
     {
         std::string inbuffer; // 持久缓冲区，累积数据
                               // 短服务:你怎么知道怎么保证你读到的是一个完整报文--自定义协议
-
+        std::string outbuffer;
+        outbuffer.clear();
         int n = sockfd->Recv(&inbuffer);
         if (n <= 0)
         {
@@ -67,20 +68,20 @@ private:
         LOG(LogLevel::DEBUG) << "inbuffer:\n " << inbuffer;
 
         // 处理数据（Protocol 会自动 erase 已处理的报文）
-        std::string outbuffer;
+        
         if (_handler) // 读取数据给上层
             outbuffer = _handler(inbuffer);
-
+        //暂时认为，读一次就读到的是完整请求
         // 没有完整报文，继续接收
         if (outbuffer.empty())
         {
             LOG(LogLevel::DEBUG) << "no complete packet, continue recv";
-            return;
+            return;//没有接到完整报文，继续去读
         }
+    
 
         LOG(LogLevel::DEBUG) << "outbuffer:\n " << outbuffer;
 
-        // ✅ 发送响应（outbuffer）
         ssize_t s = sockfd->Send(outbuffer);
         if (s < 0)
         {
