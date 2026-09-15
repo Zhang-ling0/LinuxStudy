@@ -13,7 +13,7 @@ const std::string linesep = "\r\n";
 const std::string spacesep = " ";
 const std::string headersep = ": ";
 const std::string suffixsep = ".";
-const std::string argsep = ".";
+const std::string argsep = "?";
 const std::string g_http_version = "HTTP/1.1";
 const std::string g_first_page = "index.html";
 const std::string g_wwwroot = "wwwzhangling";
@@ -492,7 +492,7 @@ public:
             {
                 http_resp.SetCode(200); // 为应答设置状态码
                 http_resp.AddHeader("Content-Length", std::to_string(content.size()));
-                http_resp.AddHeader("Content-Type", MiniType::Suffix2MimeType(".txt"));//将特定后缀转化为特定格式
+                http_resp.AddHeader("Content-Type", MiniType::Suffix2MimeType(http_req.Suffix()));//将特定后缀转化为特定格式
                 http_resp.AddHeader("Content", "close");
                 http_resp.SetBody(content);
             }
@@ -506,5 +506,6 @@ public:
     }
 
 private:
-    std::unordered_map<std::string, service_t> _http_services;//注册服务的接口   
+    std::unordered_map<std::string, service_t> _http_services;//注册服务的接口  
+    //根据uri（服务路径）进行功能路由 
 };
