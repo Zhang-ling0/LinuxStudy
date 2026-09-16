@@ -11,7 +11,7 @@ static void Usage(const std::string &proc)
 //使用HTTP 实现restful风格的服务接口
 //GET/Login HTTP/1.1
 //GET/exec HTTP/1.1 可以让浏览器为你实现Xshell 
-//可不可以是另一个服务的客户端--可以的，可以实现一个简单的代理服务的功能
+//可不可以是另一个服务的客户端--可以的，可以实现一个简单的代理服务的功能    
 void Login(HttpRequest& req,HttpResponse& resp)
 {
     std::cout<<"\nLogin function been called!"<<std::endl;
