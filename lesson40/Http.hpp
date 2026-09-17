@@ -494,6 +494,7 @@ public:
                 http_resp.AddHeader("Content-Length", std::to_string(content.size()));
                 http_resp.AddHeader("Content-Type", MiniType::Suffix2MimeType(http_req.Suffix()));//将特定后缀转化为特定格式
                 http_resp.AddHeader("Content", "close");
+                http_resp.AddHeader("Set-Cookie","username=peter;");
                 http_resp.SetBody(content);
             }
             // http_resp.Build(http_req);
