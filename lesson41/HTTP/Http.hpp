@@ -406,7 +406,7 @@ std::unordered_map<std::string, std::string> MiniType::_mine_map =
         {".jpeg", "image/jpeg"},
         {".gif", "image/gif"},
         {".ico", "image/x-icon"},
-        {".mp4", "video/mp4"},
+        {".mp4", "/mp4"},
 };
 class HttpProtocol
 {
